@@ -1,0 +1,700 @@
+:root {
+  --sl-white-text-color: #fff;
+  --sl-yellow-btn-color: #eeb927;
+  --sl-light_blue-btn-color: #5988ca;
+  --sl-blue-btn-color: rgb(26, 122, 249);
+  --sl-green-btn-color: #80c342;
+  --sl-light_red-btn-color: #e96464;
+  --sl-red-btn-color: rgb(231, 51, 51);
+  --sl-gray-bg-color: #e0e5e7;
+  --sl-gray-border-color: #ccc;
+
+  --sl-layout-zoom: 1;
+  --sl-layout-size: calc(var(--sl-layout-zoom) * 6px);
+}
+
+/*清除无名杀div默认样式*/
+.Selector,#popupContainer,.selector-header,.selector-list,.selector-content,#popupContainer div,
+.selector-header div,.selector-list div,.selector-content div:not(.characterList div){
+  display: block;
+  position: static;
+  transition: none;
+}
+
+/*清除button默认样式*/
+.selector-header button,.selector-list button,.selector-content button{
+    border: none;
+    padding: 0;
+    margin: 0;
+    outline: none;
+    background-color: transparent;
+    font-family: 'shousha';
+    color: inherit;
+}
+
+.Selector button:active:not(.selector-header-search>button) {
+  transform: scale(0.95);
+  transform-origin: center center;
+}
+
+/* 选将容器 */
+.Selector {
+  position: fixed;
+  display: none;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 10;
+
+  background-image: url(./image/huanhua_bg.jpg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position-x: center;
+  background-position-y: center;
+  transition: opacity 0.5s ease-in-out; 
+
+  font-size: calc(var(--sl-layout-size) * 3);
+  color: var(--sl-white-text-color);
+  text-align: center;
+  font-family: 'shousha';
+}
+
+.Selector[data-visible="true"]{
+  display: block;
+  opacity: 1;
+  transition-delay: 0s;
+}
+
+/* 头部区域 */
+.Selector>.selector-header {
+  display: flex;
+  width: 100%;
+  height: calc(var(--sl-layout-size) * 8);
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgba(50, 50, 50, 0.3);
+}
+
+/* 头部-分类方式切换 */
+.Selector>.selector-header .select {
+  font-size: calc(var(--sl-layout-size) * 2.5);
+  box-sizing: border-box;
+  width: calc(var(--sl-layout-size) * 25.2);
+  height: calc(var(--sl-layout-size) * 5);
+  line-height: calc(var(--sl-layout-size) * 5);
+  font-size: calc(var(--sl-layout-size) * 2);
+  background: url(./image/setting.png) no-repeat center center/contain;
+  margin-left: calc(var(--sl-layout-size) * 2.5);
+}
+.Selector>.selector-header .select>.classification,
+.Selector>.selector-header .select .method{
+  display: inline-block;
+  height: calc(var(--sl-layout-size) * 5);
+}
+
+.Selector>.selector-header .select .method img {
+  width: calc(var(--sl-layout-size) * 2);
+  vertical-align: middle;
+  transition: all .3s linear;
+  transform-origin: 50% 33.33%;
+}
+
+.Selector>.selector-header .select .select-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows .3s linear;
+}
+
+.Selector>.selector-header .select .select-content>div {
+  overflow: hidden;
+  z-index: 21;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: calc(var(--sl-layout-size) * 0.5);
+}
+
+.Selector>.selector-header .select .select-content>div>span {
+  display: block;
+  background: url(./image/hotlist.png) no-repeat center center/contain;
+}
+
+.Selector>.selector-header .select .choose:hover img {
+  transform: rotate(-180deg);
+}
+
+.Selector>.selector-header .select .choose:hover .select-content {
+  grid-template-rows: 1fr;
+}
+
+/* 头部区域——按钮区 */
+.Selector>.selector-header>.selector-header-pack {
+  display: flex;
+  flex: 1;
+  max-width: calc(var(--sl-layout-size) * 45);
+  justify-content: space-between;
+  align-items: center;
+}
+
+.Selector>.selector-header .selector-header-help {
+  width: calc(var(--sl-layout-size) * 6);
+  height: calc(var(--sl-layout-size) * 6);
+  background: url(./image/help.png)  no-repeat center center/contain;
+}
+
+.Selector>.selector-header .selectAll,
+.Selector>.selector-header .inverse,
+.Selector>.selector-content .result>button {
+  appearance: none;
+  background-color: var(--sl-light_blue-btn-color);
+  width: calc(var(--sl-layout-size) * 8);
+  height: calc(var(--sl-layout-size) * 5);
+  line-height: calc(var(--sl-layout-size) * 5);
+  box-sizing: border-box;
+  font-size: calc(var(--sl-layout-size) * 2.5);
+  border: none;
+  border-radius: calc(var(--sl-layout-size) * 1);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(1px);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    0 0 0 2px rgba(0, 0, 0, 0.2),
+    inset 0 1px 4px rgba(255, 255, 255, 0.15);
+}
+
+.Selector>.selector-header .selectAll.active,
+.Selector>.selector-header .selectAll.active::before {
+  background-color: var(--sl-blue-btn-color);
+}
+
+.Selector>.selector-header .selectAll.active{
+  box-shadow:
+    0 2px 8px rgba(26, 122, 249, 0.3), 
+    0 0 0 2px rgba(26, 122, 249, 0.2), 
+    inset 0 1px 4px rgba(255, 255, 255, 0.15),
+    rgba(0, 0, 0, 0.2) 0 0 0 1px, 
+    rgba(26, 122, 249, 0.4) 0 0 5px,
+    rgba(26, 122, 249, 0.4) 0 0 12px, 
+    rgba(26, 122, 249, 0.8) 0 0 15px;
+}
+
+.Selector>.selector-header .inverse{
+  background-color: var(--sl-yellow-btn-color);
+}
+
+.Selector>.selector-header .selectAll::before,
+.Selector>.selector-header .inverse::before,
+.Selector>.selector-content .result>button::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: calc(var(--sl-layout-size) * 0.35);
+  left: calc(var(--sl-layout-size) * 0.35);
+  right: calc(var(--sl-layout-size) * 0.35);
+  bottom: calc(var(--sl-layout-size) * 0.35);
+  background-color: var(--sl-light_blue-btn-color);
+  border-radius: inherit;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(0) scaleY(1);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    inset 0 -2px 8px rgba(255, 255, 255, 0.2);
+}
+
+.Selector>.selector-header .inverse::before{
+  background-color: var(--sl-yellow-btn-color);
+}
+
+.Selector>.selector-header .selectAll:active,
+.Selector>.selector-header .inverse:active,
+.Selector>.selector-content .result>button:active {
+  transform: translateY(1px) scale(0.95);
+  box-shadow:
+    0 3px 12px rgba(0, 0, 0, 0.7),
+    0 3px 12px rgba(229, 229, 229, 0.1),
+    inset 0 0.5px 2px rgba(255, 255, 255, 0.1);
+}
+
+.Selector>.selector-header .selectAll:hover,
+.Selector>.selector-header .inverse:hover,
+.Selector>.selector-content .result>button:hover{
+  filter: brightness(1.05) saturate(1.05);
+}
+
+.Selector>.selector-header .selectAll:hover ::before,
+.Selector>.selector-header .inverse:hover ::before,
+.Selector>.selector-content .result>button:hover ::before {
+  filter: brightness(1.05) saturate(1.05);
+}
+
+.Selector>.selector-header .setUp {
+  width: calc(var(--sl-layout-size) * 8);
+  height: calc(var(--sl-layout-size) * 6);
+  background: url(./image/setting_btn1.png) no-repeat right center/contain;
+
+}
+
+/* 头部-搜索框 */
+.Selector>.selector-header>.selector-header-search {
+  display: flex;
+  justify-content: space-between;
+  width: calc(var(--sl-layout-size) * 40);
+  height: calc(var(--sl-layout-size) * 5);
+  box-sizing: border-box;
+  /* border: .3 solid rgba(255, 132, 0); */
+  border-radius: calc(var(--sl-layout-size) * 0.8);
+  padding: 0 calc(var(--sl-layout-size) * 0.5);
+  color: #333;
+  background-color: var(--sl-gray-bg-color);
+}
+
+/*文本输入框*/
+.Selector>.selector-header>.selector-header-search .input {
+  flex: 1;
+  line-height: calc(var(--sl-layout-size) * 4);
+  width: calc(var(--sl-layout-size) * 25);
+  height: calc(var(--sl-layout-size) * 4);
+  align-self: center;
+  border: none;
+  padding-left: calc(var(--sl-layout-size) * 1);
+  border-radius: calc(var(--sl-layout-size) * 0.8);
+  outline: none;
+  font-size: calc(var(--sl-layout-size) * 2.1);
+  background-color: transparent;
+}
+
+/* 修改 placeholder 文本的样式 */
+.Selector>.selector-header>.selector-header-search .input::-webkit-input-placeholder { /* Chrome, Firefox, Opera */
+  color: #999; /* 字体颜色 */
+  font-family: 'shousha'; /* 字体家族 */
+  font-size: calc(var(--sl-layout-size) * 2.5); /* placeholder 特定字体大小 */
+  position: absolute;
+  top: 50%; /* 移动到顶部的中间位置 */
+  transform: translateY(-50%); 
+}
+
+.Selector>.selector-header>.selector-header-search .input:-moz-placeholder { /* Firefox 4-18 */
+  color: #999;
+  font-family: 'shousha';
+  font-size: calc(var(--sl-layout-size) * 2); 
+  position: absolute;
+  top: 50%; /* 移动到顶部的中间位置 */
+  transform: translateY(-50%); 
+}
+
+.Selector>.selector-header>.selector-header-search .input::-moz-placeholder { /* Firefox 19+ */
+  color: #999;
+  font-family: 'shousha';
+  font-size: calc(var(--sl-layout-size) * 2); 
+  position: absolute;
+  top: 50%; /* 移动到顶部的中间位置 */
+  transform: translateY(-50%); 
+}
+
+.Selector>.selector-header>.selector-header-search .input:-ms-input-placeholder { /* Internet Explorer 10-11 */
+  color: #999;
+  font-family: 'shousha';
+  font-size: calc(var(--sl-layout-size) * 2); 
+  position: absolute;
+  top: 50%; /* 移动到顶部的中间位置 */
+  transform: translateY(-50%); 
+}
+
+/*文本输入框搜索按钮*/
+.Selector>.selector-header>.selector-header-search button {
+  /* border-radius: 50%; */
+  align-self: center;
+  width: calc(var(--sl-layout-size) * 4);
+  height: calc(var(--sl-layout-size) * 4);
+  border-radius: calc(var(--sl-layout-size) * 0.8);
+  background: url(./image/icon-search.svg) no-repeat center center/70%;
+}
+
+.Selector>.selector-header>.selector-header-search .input:focus,
+.Selector>.selector-header>.selector-header-search button:hover {
+  background-color: #e3e5e7;
+}
+
+.Selector>.selector-header>.selector-header-search:hover {
+  background-color: #fff;
+}
+
+/*搜索数量提示*/
+.Selector>.selector-header>.selector-header-loginfo {
+  width: calc(var(--sl-layout-size) * 24.3);
+  height: calc(var(--sl-layout-size) * 4);
+  line-height: calc(var(--sl-layout-size) * 4);
+  font-size: calc(var(--sl-layout-size) * 2);
+  background: url(./image/loginfo.png) no-repeat right top/cover;
+}
+
+/* 头部-关闭按钮 */
+.Selector>.selector-header>.selector-header-close {
+  width: calc(var(--sl-layout-size) * 8);
+  height: calc(var(--sl-layout-size) * 8);
+  background: url(./image/pub_back_button.png) no-repeat right top/cover;
+}
+
+/* 武将包列表区域 */
+.Selector>.selector-list {
+  display: flex;
+  height: calc(var(--sl-layout-size) * 10);
+  width: 100%;
+  /* background-color: chartreuse; */
+}
+
+/* 武将包列表-左右按钮 */
+.Selector>.selector-list>.selector-list-left,
+.Selector>.selector-list>.selector-list-right {
+  width: calc(var(--sl-layout-size) * 8);
+  height: calc(var(--sl-layout-size) * 8);
+  margin: calc(var(--sl-layout-size) * 1);
+  background: url(./image/icon-right.png) no-repeat 0 0/cover;
+  transform: rotate(180deg);
+}
+
+.Selector>.selector-list>.selector-list-left:active{
+  transform: scale(0.95) rotate(180deg);
+}
+
+.Selector>.selector-list>.selector-list-right {
+  background: url(./image/icon-right.png) no-repeat 0 0/cover;
+  transform: none;
+}
+
+/* 武将包列表-武将包按钮 */
+.Selector>.selector-list ul {
+  height: calc(var(--sl-layout-size) * 10);
+  width: calc(100% - calc(var(--sl-layout-size) * 10));
+  display: flex;
+  flex: 1;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 calc(var(--sl-layout-size) * 1);
+  overflow-x: scroll;
+  overflow-y: hidden;
+  transition: all 0.5s ease; 
+  white-space: nowrap;
+}
+
+.Selector>.selector-list ul li {
+  flex-shrink: 0;
+  min-width: calc(var(--sl-layout-size) * 13.5);
+  /* min-height: auto; */
+  height: calc(var(--sl-layout-size) * 6.75);
+  line-height: calc(var(--sl-layout-size) * 6.75);
+  padding: 0 calc(var(--sl-layout-size) * 1);
+  box-sizing: border-box;
+  border-radius: calc(var(--sl-layout-size) * 1.1);
+  margin-right: calc(var(--sl-layout-size) * 2);
+  background: url(./image/pack.png) no-repeat center center/contain;
+  transition: all .1s linear;
+}
+
+.Selector>.selector-list ul li.active {
+  background: url(./image/packAtive.png) no-repeat center center/contain;
+  transform: scale(1.05);
+}
+
+/* 内容区域 */
+.Selector>.selector-content {
+  width: 100%;
+  height: calc(100% - calc(var(--sl-layout-size) * 18));
+  display: flex;
+}
+
+/*内容-左侧武将包分类区域 */
+.Selector>.selector-content>.selector-content-characterSort {
+  width: calc(var(--sl-layout-size) * 20);
+  height: 100%;
+  font-size: calc(var(--sl-layout-size) * 2.7);
+  /* background-color: coral; */
+}
+
+/*内容-武将包分类按钮*/
+.Selector>.selector-content>.selector-content-characterSort ol {
+  height: calc(100% - calc(var(--sl-layout-size) * 20));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+.Selector>.selector-content>.selector-content-characterSort ol li {
+  /* width: 100%; */
+  height: calc(var(--sl-layout-size) * 9.5);
+  line-height: calc(var(--sl-layout-size) * 9.5);
+  background: url(./image/modebtn.png) no-repeat center center/contain;
+  border-radius: calc(var(--sl-layout-size) * 1.2);
+  transform: scale(0.8);
+  transition: all .1s linear;
+}
+
+.Selector>.selector-content>.selector-content-characterSort ol li.active {
+  /* width: 100%; */
+  transform: scale(0.86);
+  background: url(./image/modebtn2.png) no-repeat center center/contain;
+}
+
+/* 内容-结果区域 */
+.Selector>.selector-content>.selector-content-characterSort .result {
+  width: calc(var(--sl-layout-size) * 20);
+  height: calc(var(--sl-layout-size) * 20);
+}
+
+.Selector>.selector-content .result>button{
+  width: calc(var(--sl-layout-size) * 20);
+  height: calc(var(--sl-layout-size) * 10);
+  line-height: calc(var(--sl-layout-size) * 10);
+  box-sizing: border-box;
+  border-radius: calc(var(--sl-layout-size) * 1);
+  font-size: calc(var(--sl-layout-size) * 2.7);
+  background-color: var(--sl-light_red-btn-color);
+  transform: translateY(1px) scale(0.8);
+}
+
+.Selector>.selector-content .result>.charConfirmBtn{
+  background-color: var(--sl-green-btn-color);
+}
+
+.Selector>.selector-content .result>button::before{
+  top: calc(var(--sl-layout-size) * 0.5);
+  left: calc(var(--sl-layout-size) * 0.5);
+  right: calc(var(--sl-layout-size) * 0.5);
+  bottom: calc(var(--sl-layout-size) * 0.5);
+  background-color: var(--sl-light_red-btn-color);
+}
+
+.Selector>.selector-content .result>.charConfirmBtn::before{
+  background-color: var(--sl-green-btn-color);
+}
+
+/* 添加按钮按下状态的样式，仅通过调整阴影效果 */
+.Selector>.selector-content .result>button:active {
+    transform: translateY(1px) scale(0.76);
+}
+
+.Selector>.selector-content .result>.charSelectedBtn.active,
+.Selector>.selector-content .result>.charSelectedBtn.active::before {
+  background-color: var(--sl-red-btn-color);
+}
+
+.Selector>.selector-content .result>.charSelectedBtn.active{
+  box-shadow: 
+    0 2px 8px rgba(231, 51, 51, 0.3), 
+    0 0 0 2px rgba(231, 51, 51, 0.2), 
+    inset 0 1px 4px rgba(255, 255, 255, 0.15), 
+    rgba(0, 0, 0, 0.2) 0 0 0 1px, 
+    rgba(231, 51, 51, 0.4) 0 0 5px,
+    rgba(231, 51, 51, 0.4) 0 0 12px, 
+    rgba(231, 51, 51, 0.8) 0 0 15px;
+}
+
+/* 内容-右侧武将区域*/
+.Selector>.selector-content>.characterList {
+  height: calc(100% - calc(var(--sl-layout-size) * 1));
+  flex: 1;
+}
+
+.Selector>.selector-content>.characterList>.dialog{
+  width: 100%;
+  height: 100%;
+  position: relative;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.Selector>.selector-content>.characterList>.dialog>.content-container {
+  width: 100% !important;
+  margin: 0;
+}
+
+.Selector>.selector-content>.characterList>.dialog>.content-container>.content {
+  width: 100%;
+  height: 100%;
+  /* 取消本体的隐藏滚动条  */
+  scrollbar-width: auto !important;
+}
+
+.Selector>.selector-content>.characterList>.dialog>.content-container>.content::-webkit-scrollbar {
+  display: block !important;
+  width: calc(var(--sl-layout-size) * 2);
+}
+
+.Selector>.selector-content>.characterList>.dialog>.content-container>.content::-webkit-scrollbar-thumb {
+  height: calc(var(--sl-layout-size) * 1);
+  background: #ccc;
+  border-radius: calc(var(--sl-layout-size) * 1);
+}
+
+.Selector>.selector-content>.characterList>.dialog>.content-container>.content::-webkit-scrollbar-thumb:hover {
+  background: rgb(168, 168, 168);
+}
+
+.Selector>.selector-content>.characterList>.dialog>.content-container>.content::-webkit-scrollbar-thumb:active {
+  background: rgb(120, 120, 120);
+}
+
+.Selector>.selector-content>.characterList>.dialog>.content-container>.content::-webkit-scrollbar-track {
+  border-radius: calc(var(--sl-layout-size) * 1);
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.Selector>.selector-content>.characterList>.dialog .item {
+  zoom: calc(var(--sl-layout-zoom) * 1);
+}
+
+/* 内容-右侧武将区域-武将链锁提示 */
+.Selector>.selector-content .characterList .item .tip {
+  position: absolute;
+  background: url(./image/locked.png) no-repeat center center/contain;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  z-index: 1;
+  transform: scale(1.05);
+}
+
+.Selector>.selector-content>.characterList .item .isselected {
+  box-shadow: rgba(0, 0, 0, 0.8) 0 0 12px !important;
+  position: absolute;
+  background-color: rgba(30, 30, 30, 0.6);
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  z-index: 1;
+}
+
+.Selector>.selector-content>.characterList .item .name {
+  z-index: 10;
+}
+
+/*帮助/设置弹窗容器*/
+.Selector #popupContainer {
+  position: absolute;
+  display: none;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(2px);
+  top: 0;
+  left: 0;
+  z-index: 20;
+}
+
+/*清除弹窗文本默认样式*/
+.Selector #popupContainer div * {
+	margin: 0;
+	padding: 0;
+	font-weight: 400;
+	line-height: 1.5;
+}
+
+/* 弹窗 */
+.Selector #popupContainer>.popup {
+  position: absolute;
+  width: 50%;
+  height: 80%;
+  background: rgba(0, 0, 0, .65);
+  box-sizing: border-box;
+  border: calc(var(--sl-layout-size) * 0.3) solid var(--sl-gray-border-color);
+  border-radius: calc(var(--sl-layout-size) * 1.5);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/*弹窗头部区域*/
+.Selector #popupContainer>.popup>.header{
+	display: flex;
+	width: 100%;
+	height: calc(var(--sl-layout-size) * 5);
+}
+
+/*弹窗标题*/
+.Selector #popupContainer>.popup>.header>h2 {
+	flex: 1;
+  }
+
+/*弹窗关闭按钮*/
+.Selector #popupContainer>.popup>.header>span {
+  width: calc(var(--sl-layout-size) * 5);
+  height: calc(var(--sl-layout-size) * 5);
+  background: url(./image/close.png) no-repeat center center/contain;
+}
+
+/*弹窗内容区域*/
+.Selector #popupContainer>.popup>.content {
+	width: 100%;
+	height:  calc(100% - var(--sl-layout-size) * 5);
+	padding: var(--sl-layout-size);
+	box-sizing: border-box;
+	font-size: calc(var(--sl-layout-size) * 2.5);
+	text-align: start;
+	overflow-y: scroll;
+	overflow-x: hidden;
+  }
+
+/*设置弹窗的文本区域设置布局*/
+.Selector #popupContainer>.popup>.content>div {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all.1s linear;
+}
+
+/*设置弹窗的按钮样式*/
+.Selector #popupContainer>.popup>.content>div>span {
+  display: block;
+  background: url(./image/button-off.png) no-repeat center center/contain;
+  width: calc(var(--sl-layout-size) * 10);
+  height: calc(var(--sl-layout-size) * 3.6);
+  transform: scale(0.8);
+  transform-origin: right center;
+}
+
+.Selector #popupContainer>.popup>.content>div.hidden {
+  opacity: 0 !important;
+  pointer-events: none;
+  margin-top: calc(var(--sl-layout-size) * -4.5);
+}
+
+.Selector #popupContainer>.popup>.content>div>span.active {
+  background: url(./image/button-on.png) no-repeat center center/contain;
+}
+
+.Selector #popupContainer h4 {
+  text-indent: 2em;
+}
+
+/*滚动隐藏*/
+.Selector>.selector-list ul::-webkit-scrollbar,
+.Selector>.selector-content-characterSort ol::-webkit-scrollbar,
+.Selector>.selector-content .characterList::-webkit-scrollbar,
+.Selector #popupContainer>div::-webkit-scrollbar {
+  display: none;
+}
+
+.Selector .selector-header-help,
+.Selector .selectAll,
+.Selector .select,
+.Selector .setUp,
+.Selector button,
+.Selector .selector-header-close,
+.Selector .selector-list-left,
+.Selector .selector-list-right,
+.Selector .charSelectedBtn,
+.Selector .charConfirmBtn,
+.Selector li,
+.Selector .item,
+.Selector span {
+  cursor: url(./image/1.ico), auto;
+}
