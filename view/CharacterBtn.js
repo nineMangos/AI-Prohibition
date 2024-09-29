@@ -1,32 +1,34 @@
-import { lib, game, ui, get, ai, _status } from "../../noname.js";
+import { lib, game, ui, get, ai, _status } from "../../../noname.js";
+import config from "../asset/config.js";
 
-class CharacterBtn extends HTMLDivElement {
-	name; //武将id
-	isUnselectable; //是否不可选
+/**@extends HTMLDivElement */
+export default class CharacterBtn {
+	/** @type {string} 武将id */
+	name;
+	/** @type {boolean} 是否不可选 */
+	isUnselectable;
 	/**
 	 * @param {string} id 武将id
 	 * @param {string[]} selectedBannedList 已选择武将id数组
-	 * @param {string[]} reducedBannedList 已取消选择武将id数组
-	 * @param {object} config 配置
 	 */
-	constructor(id, selectedBannedList, reducedBannedList, config) {
+	constructor(id, selectedBannedList) {
 		const button = ui.create.button(id, 'character', false);
-		Object.setPrototypeOf(button, CharacterBtn.prototype);
+		Object.setPrototypeOf(CharacterBtn.prototype, Object.getPrototypeOf(button));
+		Object.setPrototypeOf(button, this);
 		button.classList.add('item');
 		button.setAttribute('data-name', id);
 		button.name = id;
-		if (config.defaultImage) button.style.backgroundImage = `url(${lib.assetURL}extension/AI禁将/image/default_character.jpg)`;
-		else {
-			button.src = button.style.backgroundImage;
-			button.style.backgroundImage = '';
+		if (!config.defaultImage) {
+			button.setAttribute('data-src', button.style.backgroundImage);
 		}
+		button.style.backgroundImage = `url(${lib.assetURL}extension/AI禁将/image/default_character.jpg)`;
 		//根据情况渲染武将牌的“不可选”状态
-		if (window.forbidai_savedFilter(id)) {
+		if (window['AI禁将_savedFilter'](id)) {
 			button.unselectable();
 			return button;
 		}
 		//根据情况渲染“锁链”提示（tip）
-		if ((selectedBannedList.includes(id) || lib.filter.characterDisabled(id)) && !reducedBannedList.includes(id)) {
+		if (selectedBannedList.includes(id) || lib.filter.characterDisabled(id)) {
 			button.select();
 		}
 		//根据情况渲染武将牌的“小黑屋”状态
@@ -82,10 +84,10 @@ class CharacterBtn extends HTMLDivElement {
 		const block = this.getBlock();
 		if (block) this.removeChild(block);
 	}
+	//自动加入/移除小黑屋
 	autoblock() {
 		if (this.getSelected()) this.block();
 		else this.unblock();
 	}
 }
 
-export default CharacterBtn;

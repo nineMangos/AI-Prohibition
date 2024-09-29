@@ -1,13 +1,14 @@
-import { lib, game, ui, get, ai, _status } from "../../noname.js";
+import { lib, game, ui, get, ai, _status } from "../../../noname.js";
+import SelectorController from '../controller/SelectorController.js';
+import config from "../asset/config.js";
 
-class CharacterModel {
+export default class SelectorModel {
+	/** * @type { string[] } 缓存 getAllCharactersId() 的返回值*/
 	#allCharactersId;
-	#statusCharactersId;
-	constructor(selector) {
-		this.selector = selector;
-	}
+	/** * @type { SelectorController } */
+	controller
 	/**
-	 * 获取所有的武将包id数组，数组的首项加上 'all'，并将返回结果缓存在 this.#packlist 中
+	 * 获取所有的武将包id数组，数组的首项加上 'all'
 	 */
 	getPackListId() {
 		const packlist = [];
@@ -27,8 +28,8 @@ class CharacterModel {
 	 * 获取所有的武将包分类id数组，数组的首项加上 'all'
 	 */
 	getPackCategoriesId() {
-		const mode = this.selector.currentActiveMode;
-		const pack = this.selector.currentActivePackId;
+		const mode = config.currentActiveMode;
+		const pack = config.currentActivePackId;
 		switch (mode) {
 			case '默认':
 				return ['all', ...Object.keys(lib.characterSort[pack] || {})];
@@ -58,12 +59,12 @@ class CharacterModel {
 		return Object.keys(lib.characterPack[pack]);
 	}
 	/**
-	 * 根据武将包id、模式和分类来获取武将id数组，并将返回结果保存在 this.#statusCharactersId 中
+	 * 根据当前武将包id、模式和分类等过滤条件来获取武将id数组
 	 */
-	getCharactersId() {
-		const mode = this.selector.currentActiveMode;
-		const pack = this.selector.currentActivePackId;
-		const packCategories = this.selector.currentActivePackCategoryId;
+	getCurrentCharactersId() {
+		const mode = config.currentActiveMode;
+		const pack = config.currentActivePackId;
+		const packCategories = config.currentActivePackCategoryId;
 		const characters = (() => {
 			if (pack === 'all') {
 				if (packCategories === 'all') return this.getAllCharactersId();
@@ -93,22 +94,25 @@ class CharacterModel {
 					return packCharactersId.filter(id => lib.character[id].sex === packCategories || lib.character[id][0] === packCategories);
 			}
 		})()
-		this.#statusCharactersId = [...new Set(characters.filter(id => id !== void 0 && this.getAllCharactersId().includes(id)))];
-		return this.#statusCharactersId;
+		return characters;
 	}
 	/**
-	 * 获取 this.getCharactersId() 返回值的缓存角色数组
+	 * 根据当前武将包id、模式和分类等过滤条件来获取要渲染的合法武将id数组，并去重排序
+	 * @param { ((id: string) => boolean)? } filter
 	 */
-	getStatusCharactersId() {
-		return this.#statusCharactersId || this.getCharactersId();
-	}
-	/**
-	 * 获取过滤后的角色数组
-	 * @param {function?} filter 过滤函数
-	 */
-	getFilterCharactersId(filter) {
-		return this.getStatusCharactersId().filter(filter);
+	getCharactersId(filter) {
+		let characters = this.getCurrentCharactersId();
+		characters = characters.filter(id => {
+			if (id === void 0 || !this.getAllCharactersId().includes(id)) return false;
+			if (filter && !filter(id)) return false;
+			if (config.isCharSelectedActive && !lib.filter.characterDisabled(id) && !this.controller.selectedBannedList.includes(id)) return false;
+			if (config.hide && window['AI禁将_savedFilter'](id)) return false;
+			return true;
+		});
+		characters = [...new Set(characters)];
+		return characters.sort((a, b) => {
+			return !lib.filter.characterDisabled(b) - !lib.filter.characterDisabled(a) +
+				!window['AI禁将_savedFilter'](b) - !window['AI禁将_savedFilter'](a)
+		})
 	}
 }
-
-export default CharacterModel;

@@ -1,61 +1,30 @@
-import { lib, game, ui, get, ai, _status } from "../../noname.js";
-import CharacterModel from './CharacterModel.js';
-import InteractionModel from './InteractionModel.js';
+import { lib, game, ui, get, ai, _status } from "../../../noname.js";
+import SelectorController from '../controller/SelectorController.js';
 import CanvasBoard from './CanvasBoard.js';
 import Dialog from './Dialog.js';
 import CharacterBtn from './CharacterBtn.js';
+import config from "../asset/config.js";
 
 /**
- * @type {CharacterSelector}
+ * @type {Selector}
  * @extends {HTMLDivElement}
  */
-class CharacterSelector extends HTMLDivElement {
-	/** * @type { '默认'|'评级'|'势力'|'性别' } 当前武将包的分类方式 */
-	get currentActiveMode() { return this.config.record[0]; }
-	set currentActiveMode(value) { this.config.record[0] = value; }
-	/** * @type { string } 当前武将包（'all' 或 武将包id） */
-	get currentActivePackId() { return this.config.record[1]; }
-	set currentActivePackId(value) { this.config.record[1] = value; }
-	/** * @type { string } 当前武将包的分类（‘standard_2008’、‘standard_2013’|'epic'、'legend'|'wei'、'shu'） */
-	get currentActivePackCategoryId() { return this.config.record[2]; }
-	set currentActivePackCategoryId(value) { this.config.record[2] = value; }
-	/** * @type { number } 武将包栏的滚动条位置 */
-	get scrollLeft() { return this.config.record[3]; }
-	set scrollLeft(value) { this.config.record[3] = value; }
-	/** * @type { boolean } 是否在显示“禁将列表” */
-	get isCharSelectedActive() { return this.config.record[4]; }
-	set isCharSelectedActive(value) { this.config.record[4] = value; }
+class Selector extends HTMLDivElement {
 	/** * @type { boolean } 是否已经初始化 */
 	#isInit
-	/** * @type { boolean } 是否处于搜索框的搜索状态下 */
-	isSearching
-	/** * @type { object } 配置 */
-	config = {
-		record: [],
-		bannedList: [],
-		small: false,
-		defaultImage: 0,
-		addMenu: false,
-		remember: true,
-		hide: false,
-	}
-	/** * @type { HTMLDivElement[] } 不包含不可选的武将按钮 */
+	/** * @type { HTMLDivElement[] } 当前可选的所有武将按钮 */
 	buttonsArr = [];
-	/** * @type { HTMLDivElement[] } 所有武将按钮*/
+	/** * @type { HTMLDivElement[] } 当前的所有武将按钮*/
 	allButtonsArr = [];
 	/** * @type { object } */
 	node
 	/** * @type { HTMLCanvasElement } */
 	canvas
-	/** * @type { CharacterModel } */
-	characterModel
-	/** * @type { InteractionModel } */
-	interactionModel
+	/** * @type { SelectorController } */
+	controller
 	constructor() {
 		super();
 		this.classList.add('Selector');
-		this.characterModel = new CharacterModel(this);
-		this.interactionModel = new InteractionModel(this);
 		this.innerHTML = `
 			<div class="selector-header">
 				<div class="select">
@@ -76,23 +45,29 @@ class CharacterSelector extends HTMLDivElement {
 					</span>
 				</div>
 				<div class="selector-header-pack">
-					<button class="selector-header-help"></button>
+					<button class="selector-header-help" title="帮助"></button>
 					<button class="selectAll">全选</button>
 					<button class="inverse">反选</button>
-					<button class="setUp"></button>
+					<button class="plan">方案</button>
+					<button class="setUp" title="设置"></button>
 				</div>
-				<div class="selector-header-search">
-					<input type="text" class="input" placeholder="输入武将名称/拼音以搜索">
-					<button></button>
-				</div>
+				<form class="selector-header-search">
+					<div class="search-content">
+						<input class="input" type="text" autocomplete="off"
+							accesskey="f" maxlength="100" x-webkit-speech="" x-webkit-grammar="builtin:translate" value=""
+							placeholder="输入武将名称/拼音以搜索" title="输入武将名称/拼音以搜索">
+						<div class="search-clean"></div>
+					</div>
+					<button type="button"></button>
+				</form>
 				<div class="selector-header-loginfo">
 					共搜索到<span style="color: #ffe6b7;">0</span>个武将
 				</div>
 				<div class="selector-header-close"></div>
 			</div>
 			<div class="selector-list">
-				<button class="selector-list-left"></button>
-				<button class="selector-list-right"></button>
+				<button class="selector-list-left" title="向左滚动"></button>
+				<button class="selector-list-right" title="向右滚动"></button>
 				<ul></ul>
 			</div>
 			<div class="selector-content">
@@ -105,16 +80,16 @@ class CharacterSelector extends HTMLDivElement {
 				</div>
 				<div class="characterList"></div>
 			</div>
-			<div id="popupContainer"></div>
 	 	 `;
-
 		this.node = {
 			selectContent: this.querySelector('.selector-header>.select>span>.select-content'),
 			help: this.querySelector('.selector-header-help'),
 			selectAll: this.querySelector('.selector-header-pack>.selectAll'),
 			inverse: this.querySelector('.selector-header-pack>.inverse'),
+			plan: this.querySelector('.selector-header-pack>.plan'),
 			setUp: this.querySelector('.selector-header-pack>.setUp'),
-			searchInput: this.querySelector('.selector-header-search>.input'),
+			searchInput: this.querySelector('.selector-header-search .input'),
+			searchClean: this.querySelector('.selector-header-search .search-clean'),
 			searchBtn: this.querySelector('.selector-header-search>button'),
 			loginfo: this.querySelector('.selector-header-loginfo>span'),
 			close: this.querySelector('.selector-header-close'),
@@ -126,9 +101,6 @@ class CharacterSelector extends HTMLDivElement {
 			charConfirmBtn: this.querySelector('.selector-content-characterSort .charConfirmBtn'),
 			characterList: this.querySelector('.selector-content>.characterList'),
 		}
-
-		this.config = game.getExtensionConfig('AI禁将', 'forbidai');
-		if (!this.config.remember || this.config.record.length < 5) this.config.record = ['默认', 'all', 'all', 0, false];
 	}
 	init() {
 		if (this.#isInit) return;
@@ -138,24 +110,23 @@ class CharacterSelector extends HTMLDivElement {
 		const cvs = new CanvasBoard(this.node.characterList, this);
 		this.canvas = cvs;
 
-		this.node.selectContent.parentNode.querySelector('.method>span').textContent = this.currentActiveMode;
-		if (this.isCharSelectedActive) {
+		document.documentElement.style.setProperty('--sl-layout-zoom', config.zoom);
+		this.node.selectContent.parentNode.querySelector('.method>span').textContent = config.currentActiveMode;
+		if (config.isCharSelectedActive) {
 			this.node.charSelectedBtn.classList.add('active');
 		}
 	}
-	reinit() {
-		this.onClose = () => { };
-		this.close();
+	reload() {
 		this.remove();
-		const selector = new CharacterSelector();
+		const selector = new Selector();
+		this.controller.selector = selector;
+		selector.controller = this.controller;
 		selector.open();
 	}
 	/**
 	 * @param { function } onClose 
 	 */
-	open(onClose) {
-		this.windowOnkeydown = window.onkeydown;
-		window.onkeydown = this.interactionModel.onKeydownWindow.bind(this.interactionModel);
+	open() {
 		const forbidai_bg = game.getExtensionConfig('AI禁将', 'forbidai_bg');
 		if (forbidai_bg) {
 			this.style.backgroundImage = forbidai_bg === 'xitong' ? ui.background.style.backgroundImage : `url("${lib.assetURL}extension/AI禁将/image/${forbidai_bg}_bg.jpg")`;
@@ -163,26 +134,17 @@ class CharacterSelector extends HTMLDivElement {
 		ui.window.appendChild(this);
 		this.init();
 		this.setAttribute("data-visible", "true");
-		this.onClose = onClose;
-		this.node.charPackList.scrollLeft = this.scrollLeft;
+		this.node.charPackList.scrollLeft = config.scrollLeft;
 	}
 	close() {
-		window.onkeydown = this.windowOnkeydown;
-		if (ui.dialog) ui.dialog.show();
 		this.setAttribute("data-visible", "false");
-		if (this.onClose) {
-			this.onClose();
-		} else {
-			ui.arena.classList.add('menupaused');
-			ui.menuContainer.show();
-		}
 	}
 	/**
 	 * 渲染武将包列表/渲染武将包分类列表
-	 * @param {string} name 'packList' | 'PackCategories'
+	 * @param { 'packList' | 'packCategories' } name 
 	 */
 	renderList(name) {
-		let list;
+		const list = this.controller.getList(name);
 		let parentNode;
 		let getActiveId;
 		let setActiveId;
@@ -190,19 +152,17 @@ class CharacterSelector extends HTMLDivElement {
 		let next = () => { };
 
 		if (name === 'packList') {
-			list = this.characterModel.getPackListId();
 			parentNode = this.node.charPackList;
-			getActiveId = () => this.currentActivePackId;
-			setActiveId = (id) => this.currentActivePackId = id;
+			getActiveId = () => config.currentActivePackId;
+			setActiveId = (id) => config.currentActivePackId = id;
 			getInnerHTML = (id) => {
 				return id === 'all' ? '全扩' : lib.translate[id + '_character_config']
 			}
 			next = this.renderPackCategories.bind(this);
 		} else if (name === 'packCategories') {
-			list = this.characterModel.getPackCategoriesId();
 			parentNode = this.node.charPackCategories;
-			getActiveId = () => this.currentActivePackCategoryId;
-			setActiveId = (id) => this.currentActivePackCategoryId = id;
+			getActiveId = () => config.currentActivePackCategoryId;
+			setActiveId = (id) => config.currentActivePackCategoryId = id;
 			getInnerHTML = (id) => {
 				return id === 'all' ? '所有武将' : lib.translate[id];
 			}
@@ -251,22 +211,12 @@ class CharacterSelector extends HTMLDivElement {
 	 * @param { string[]? } charactersArr 
 	 */
 	renderCharacterList(charactersArr) {
-		//筛选排序id数组
-		let characters = charactersArr || this.characterModel.getCharactersId();
-		characters = characters.filter(id => {
-			if (this.isCharSelectedActive && !lib.filter.characterDisabled(id) && !this.interactionModel.selectedBannedList.includes(id)) return false;
-			if (this.config.hide && window.forbidai_savedFilter(id)) return false;
-			return true;
-		});
-		characters.sort((a, b) => {
-			return !lib.filter.characterDisabled(b) - !lib.filter.characterDisabled(a) +
-				!window.forbidai_savedFilter(b) - !window.forbidai_savedFilter(a)
-		})
+		const characters = charactersArr || this.controller.getList('characters');
 		//创建武将按钮
 		this.node.loginfo.textContent = `${characters.length}`;
 		const buttonsArr = [];
 		const allButtonsArr = characters.map(ele => {
-			const btn = new CharacterBtn(ele, this.interactionModel.selectedBannedList, this.interactionModel.reducedBannedList, this.config);
+			const btn = new CharacterBtn(ele, this.controller.selectedBannedList);
 			if (!btn.isUnselectable) buttonsArr.push(btn);
 			return btn;
 		});
@@ -281,10 +231,10 @@ class CharacterSelector extends HTMLDivElement {
 		this.node.dialog = dialog; */
 		dialog.content.innerHTML = '';
 		const buttons = ui.create.div('.buttons', dialog.content);
-		if (this.config.small) buttons.classList.add('smallzoom');
+		if (config.small) buttons.classList.add('smallzoom');
 		this.renderElements(allButtonsArr, buttons);
-		this.interactionModel.autoToggleSelectAllBtn();
-		if (!this.config.defaultImage) this.lazyLoad(allButtonsArr);
+		this.controller.autoToggleSelectAllBtn();
+		if (!config.defaultImage) this.lazyLoad(allButtonsArr);
 	}
 	/**
 	 * 懒加载武将图片
@@ -294,14 +244,16 @@ class CharacterSelector extends HTMLDivElement {
 		const io = new IntersectionObserver((entries) => {
 			entries.forEach(item => {
 				if (item.isIntersecting) {
-					const btn = item.target
-					if (item.intersectionRatio > 0 && item.intersectionRatio <= 1) {
-						btn.style.backgroundImage = btn.src;
-						//btn.setAttribute('src', btn.getAttribute('data-src'))
+					const btn = item.target;
+					// if (item.intersectionRatio > 0 && item.intersectionRatio <= 1) {
+					if (btn.getAttribute('data-src')) {
+						btn.style.backgroundImage = btn.getAttribute('data-src');
 						io.unobserve(btn);
 					}
 				}
 			})
+		}, {
+			threshold: 0.01 // 触发条件更为宽松
 		})
 		buttons.forEach((it) => {
 			io.observe(it)
@@ -315,7 +267,7 @@ class CharacterSelector extends HTMLDivElement {
 	renderElements(elements, container) {
 		let frame = 0;// 当前帧数
 
-		function renderFrame() {
+		const renderFrame = function () {
 			const num = 10; // 每帧渲染的元素数量
 			const start = frame * num; // 当前帧的起始索引
 			const end = Math.min(start + num, elements.length); // 当前帧的结束索引
@@ -339,10 +291,11 @@ class CharacterSelector extends HTMLDivElement {
 			help,
 			selectAll,
 			inverse,
+			plan,
 			setUp,
 			searchInput,
+			searchClean,
 			searchBtn,
-			loginfo,
 			close,
 			left,
 			right,
@@ -353,7 +306,7 @@ class CharacterSelector extends HTMLDivElement {
 			characterList
 		} = this.node;
 		const selector = this;
-		function getEvtName(name) {
+		const getEvtName = function (name) {
 			const map = new Map([
 				["mouseup", "touchend"],
 				["click", "touchend"],
@@ -361,9 +314,9 @@ class CharacterSelector extends HTMLDivElement {
 			]);
 			return lib.config.touchscreen ? map.get(name) : name;
 		}
-		function handleEventListener(target, eventName, callbackName) {
+		const handleEventListener = function (target, eventName, callbackName) {
 			target.addEventListener(eventName, function (e) {
-				selector.interactionModel[callbackName](this, e);
+				selector.controller[callbackName](this, e);
 			});
 		}
 		const click = getEvtName('click');
@@ -374,8 +327,11 @@ class CharacterSelector extends HTMLDivElement {
 		handleEventListener(help, click, 'onClickHelpBtn');
 		handleEventListener(selectAll, click, 'onClickSelectAllBtn');
 		handleEventListener(inverse, click, 'onClickInverseBtn');
+		handleEventListener(plan, click, 'onClickPlanBtn');
 		handleEventListener(setUp, click, 'onClickSetUpBtn');
-		handleEventListener(searchInput, 'keyup', 'onKeyupSearchInput');
+		handleEventListener(searchInput, 'keydown', 'onKeydownSearchInput');
+		handleEventListener(searchInput, 'input', 'onInputSearchInput');
+		handleEventListener(searchClean, click, 'onClickSearchClean');
 		handleEventListener(searchBtn, click, 'onClickSearchBtn');
 		handleEventListener(close, click, 'onClickCloseBtn');
 		handleEventListener(left, mousedown, 'onMousedownDirectionBtn');
@@ -389,5 +345,5 @@ class CharacterSelector extends HTMLDivElement {
 	}
 }
 
-customElements.define('character-selector', CharacterSelector, { extends: 'div' });
-export default CharacterSelector;
+customElements.define('character-selector', Selector, { extends: 'div' });
+export default Selector;

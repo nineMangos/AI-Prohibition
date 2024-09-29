@@ -1,31 +1,22 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
-import CharacterSelector from "./CharacterSelector.js";
+import Selector from "./view/Selector.js";
+import SelectorController from "./controller/SelectorController.js";
+import SelectorModel from "./model/SelectorModel.js";
+import config from "./asset/config.js";
+import utils from "./asset/utils.js";
 
 game.import("extension", function () {
 
 	let updateHistory;
-	lib.init.css(lib.assetURL + 'extension/AI禁将', "CharacterSelector");//调用css样式
+	lib.init.css(lib.assetURL + 'extension/AI禁将/view', "Selector");//调用css样式
+	let selectorController;
 
-	if (game.getExtensionConfig('AI禁将', 'forbidai') === void 0) {
-		game.saveExtensionConfig('AI禁将', 'forbidai', {
-			record: ['默认', 'all', 'all', 0, false],
-			bannedList: [],
-			defaultImage: false,
-			addMenu: false,
-			remember: true,
-			small: false,
-			hide: false,
-		});
-	}
-	const characterSelector = new CharacterSelector();
 	return {
 		name: "AI禁将",
-		content: function (config, pack) {
+		content: function (cfg, pack) {
 
 			/* <-------------------------AI禁将-------------------------> */
-			game.saveExtensionConfigValue = game.saveExtensionConfigValue || function (extension, key) {
-				return game.saveExtensionConfig(extension, key, game.getExtensionConfig(extension, key))
-			}
+			selectorController = new SelectorController(new Selector(), new SelectorModel());
 
 			!(function () {
 				let savedFilter = lib.filter.characterDisabled;
@@ -34,9 +25,8 @@ game.import("extension", function () {
 				 * 从《玄武江湖》抄来的AI禁将
 				*/
 				lib.filter.characterDisabled = function (i, libCharacter) {
-					if (Array.isArray(lib.config['extension_PS武将_PS_bannedList'])) game.saveExtensionConfig('PS武将', 'PS_bannedList', []);//重置旧设置
 					if (stockDisabled) return savedFilter(i, libCharacter);
-					let list = game.getExtensionConfig('AI禁将', 'forbidai').bannedList || [];
+					let list = config.bannedList;
 					if (lib.character[i] && list.includes(i)) {
 						return true;
 					}
@@ -45,7 +35,7 @@ game.import("extension", function () {
 				/**
 				 * 判断是否为本体或者其他扩展的禁将
 				 */
-				window.forbidai_savedFilter = function (i, libCharacter) {
+				window['AI禁将_savedFilter'] = function (i, libCharacter) {
 					stockDisabled = true;
 					let result = lib.filter.characterDisabled(i, libCharacter);
 					stockDisabled = false;
@@ -54,20 +44,12 @@ game.import("extension", function () {
 			}());
 
 			/* <-------------------------从《全能搜索》抄来的加入顶部菜单栏-------------------------> */
-			if (game.getExtensionConfig('AI禁将', 'forbidai').addMenu) {
+			if (config.addMenu) {
 				const getSystem = setInterval(() => {
 					if (ui.system1 || ui.system2) {
 						clearInterval(getSystem);
 						ui.create.system('🈲', function () {
-							characterSelector.open(() => {
-								setTimeout(() => {
-									game.closePopped();
-									ui.system1.classList.add("shown");
-									ui.system2.classList.add("shown");
-									game.closeMenu();
-									ui.click.shortcut();
-								}, 0)
-							});
+							selectorController.openSelector('showSystem');
 						});
 					}
 				}, 500);
@@ -76,7 +58,7 @@ game.import("extension", function () {
 		precontent: function () {
 			lib.init.promises
 				.json(`${lib.assetURL}extension/AI禁将/updateHistory.json`)
-				.then(info => updateHistory = info, err => alert('JSON 文件解析失败\n' + err))
+				.then(info => updateHistory = info, err => utils.alert('JSON 文件解析失败\n' + err))
 		}, config: {
 			"updateInfo": {
 				name: `版本：2.0`,
@@ -113,9 +95,6 @@ game.import("extension", function () {
 					"huanhua": "幻化之战",
 					"erqiao": "大乔小乔",
 					"yueye": "仲夏月夜",
-				},
-				onclick: function (item) {
-					game.saveExtensionConfig('AI禁将', 'forbidai_bg', item);
 				},
 				"textMenu": function (node, link) {
 					lib.setScroll(node.parentNode);
@@ -156,7 +135,7 @@ game.import("extension", function () {
 				"clear": true,
 				name: '<ins>打开禁将界面</ins>',
 				onclick: function () {
-					characterSelector.open();
+					selectorController.openSelector();
 				},
 			},
 		}, help: {}, package: {

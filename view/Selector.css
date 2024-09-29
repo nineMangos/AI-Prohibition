@@ -1,6 +1,7 @@
 :root {
   --sl-white-text-color: #fff;
-  --sl-yellow-btn-color: #eeb927;
+  --sl-yellow-btn-color: #e6b631;
+  --sl-purple-btn-color: #a265e8;
   --sl-light_blue-btn-color: #5988ca;
   --sl-blue-btn-color: rgb(26, 122, 249);
   --sl-green-btn-color: #80c342;
@@ -14,8 +15,8 @@
 }
 
 /*清除无名杀div默认样式*/
-.Selector,#popupContainer,.selector-header,.selector-list,.selector-content,#popupContainer div,
-.selector-header div,.selector-list div,.selector-content div:not(.characterList div){
+.Selector,.selector-header,.selector-list,.selector-content,.selector-header div,
+.selector-list div,.selector-content div:not(.characterList div){
   display: block;
   position: static;
   transition: none;
@@ -48,7 +49,7 @@
   left: 0;
   z-index: 10;
 
-  background-image: url(./image/huanhua_bg.jpg);
+  background-image: url(../image/huanhua_bg.jpg);
   background-repeat: no-repeat;
   background-size: cover;
   background-position-x: center;
@@ -85,7 +86,7 @@
   height: calc(var(--sl-layout-size) * 5);
   line-height: calc(var(--sl-layout-size) * 5);
   font-size: calc(var(--sl-layout-size) * 2);
-  background: url(./image/setting.png) no-repeat center center/contain;
+  background: url(../image/setting.png) no-repeat center center/contain;
   margin-left: calc(var(--sl-layout-size) * 2.5);
 }
 .Selector>.selector-header .select>.classification,
@@ -116,7 +117,7 @@
 
 .Selector>.selector-header .select .select-content>div>span {
   display: block;
-  background: url(./image/hotlist.png) no-repeat center center/contain;
+  background: url(../image/hotlist.png) no-repeat center center/contain;
 }
 
 .Selector>.selector-header .select .choose:hover img {
@@ -139,11 +140,12 @@
 .Selector>.selector-header .selector-header-help {
   width: calc(var(--sl-layout-size) * 6);
   height: calc(var(--sl-layout-size) * 6);
-  background: url(./image/help.png)  no-repeat center center/contain;
+  background: url(../image/help.png)  no-repeat center center/contain;
 }
 
 .Selector>.selector-header .selectAll,
 .Selector>.selector-header .inverse,
+.Selector>.selector-header .plan,
 .Selector>.selector-content .result>button {
   appearance: none;
   background-color: var(--sl-light_blue-btn-color);
@@ -159,9 +161,9 @@
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateY(1px);
   box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.3),
-    0 0 0 2px rgba(0, 0, 0, 0.2),
-    inset 0 1px 4px rgba(255, 255, 255, 0.15);
+    0 calc(var(--sl-layout-size) * 0.33) calc(var(--sl-layout-size) * 1.33) rgba(0, 0, 0, 0.3),
+    0 0 0 calc(var(--sl-layout-size) * 0.33) rgba(0, 0, 0, 0.2),
+    inset 0 calc(var(--sl-layout-size) * 0.16) calc(var(--sl-layout-size) * 0.67) rgba(255, 255, 255, 0.15);
 }
 
 .Selector>.selector-header .selectAll.active,
@@ -171,21 +173,30 @@
 
 .Selector>.selector-header .selectAll.active{
   box-shadow:
-    0 2px 8px rgba(26, 122, 249, 0.3), 
-    0 0 0 2px rgba(26, 122, 249, 0.2), 
-    inset 0 1px 4px rgba(255, 255, 255, 0.15),
-    rgba(0, 0, 0, 0.2) 0 0 0 1px, 
-    rgba(26, 122, 249, 0.4) 0 0 5px,
-    rgba(26, 122, 249, 0.4) 0 0 12px, 
-    rgba(26, 122, 249, 0.8) 0 0 15px;
+    0 calc(var(--sl-layout-size) * 0.33) calc(var(--sl-layout-size) * 1.33) rgba(0, 0, 0, 0.3),
+    0 0 0 calc(var(--sl-layout-size) * 0.33) rgba(0, 0, 0, 0.2),
+    inset 0 calc(var(--sl-layout-size) * 0.16) calc(var(--sl-layout-size) * 0.67) rgba(255, 255, 255, 0.15),
+    
+    0 calc(var(--sl-layout-size) * 0.33) calc(var(--sl-layout-size) * 1.33) rgba(26, 122, 249, 0.3), 
+    0 0 0 calc(var(--sl-layout-size) * 0.33) rgba(26, 122, 249, 0.2), 
+    inset 0 calc(var(--sl-layout-size) * 0.16) calc(var(--sl-layout-size) * 0.67) rgba(255, 255, 255, 0.15),
+    rgba(0, 0, 0, 0.2) 0 0 0 calc(var(--sl-layout-size) * 0.16), 
+    rgba(26, 122, 249, 0.4) 0 0 calc(var(--sl-layout-size) * 0.83),
+    rgba(26, 122, 249, 0.4) 0 0 calc(var(--sl-layout-size) * 2), 
+    rgba(26, 122, 249, 0.8) 0 0 calc(var(--sl-layout-size) * 2.5);
 }
 
 .Selector>.selector-header .inverse{
   background-color: var(--sl-yellow-btn-color);
 }
 
+.Selector>.selector-header .plan{
+  background-color: var(--sl-purple-btn-color);
+}
+
 .Selector>.selector-header .selectAll::before,
 .Selector>.selector-header .inverse::before,
+.Selector>.selector-header .plan::before,
 .Selector>.selector-content .result>button::before {
   content: "";
   position: absolute;
@@ -199,32 +210,42 @@
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateY(0) scaleY(1);
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.5),
-    inset 0 -2px 8px rgba(255, 255, 255, 0.2);
+    0 calc(var(--sl-layout-size) * 1.33) calc(var(--sl-layout-size) * 5.33) rgba(0, 0, 0, 0.5),
+    inset 0 calc(var(--sl-layout-size) * -0.33) calc(var(--sl-layout-size) * 1.33) rgba(255, 255, 255, 0.2);
 }
 
 .Selector>.selector-header .inverse::before{
   background-color: var(--sl-yellow-btn-color);
 }
+.Selector>.selector-header .plan::before{
+  background-color: var(--sl-purple-btn-color);
+}
 
 .Selector>.selector-header .selectAll:active,
 .Selector>.selector-header .inverse:active,
+.Selector>.selector-header .plan:active,
 .Selector>.selector-content .result>button:active {
   transform: translateY(1px) scale(0.95);
   box-shadow:
-    0 3px 12px rgba(0, 0, 0, 0.7),
-    0 3px 12px rgba(229, 229, 229, 0.1),
-    inset 0 0.5px 2px rgba(255, 255, 255, 0.1);
+    0 calc(var(--sl-layout-size) * 0.33) calc(var(--sl-layout-size) * 1.33) rgba(0, 0, 0, 0.3),
+    0 0 0 calc(var(--sl-layout-size) * 0.33) rgba(0, 0, 0, 0.2),
+    inset 0 calc(var(--sl-layout-size) * 0.16) calc(var(--sl-layout-size) * 0.67) rgba(255, 255, 255, 0.15),
+    
+    0 calc(var(--sl-layout-size) * 0.5) calc(var(--sl-layout-size) * 2) rgba(0, 0, 0, 0.7),
+    0 calc(var(--sl-layout-size) * 0.5) calc(var(--sl-layout-size) * 2) rgba(229, 229, 229, 0.1),
+    inset 0 calc(var(--sl-layout-size) * 0.08) calc(var(--sl-layout-size) * 0.33) rgba(255, 255, 255, 0.1);
 }
 
 .Selector>.selector-header .selectAll:hover,
 .Selector>.selector-header .inverse:hover,
+.Selector>.selector-header .plan:hover,
 .Selector>.selector-content .result>button:hover{
   filter: brightness(1.05) saturate(1.05);
 }
 
 .Selector>.selector-header .selectAll:hover ::before,
 .Selector>.selector-header .inverse:hover ::before,
+.Selector>.selector-header .paln:hover ::before,
 .Selector>.selector-content .result>button:hover ::before {
   filter: brightness(1.05) saturate(1.05);
 }
@@ -232,7 +253,7 @@
 .Selector>.selector-header .setUp {
   width: calc(var(--sl-layout-size) * 8);
   height: calc(var(--sl-layout-size) * 6);
-  background: url(./image/setting_btn1.png) no-repeat right center/contain;
+  background: url(../image/setting_btn1.png) no-repeat right center/contain;
 
 }
 
@@ -240,7 +261,8 @@
 .Selector>.selector-header>.selector-header-search {
   display: flex;
   justify-content: space-between;
-  width: calc(var(--sl-layout-size) * 40);
+  align-items: center;
+  width: calc(var(--sl-layout-size) * 38);
   height: calc(var(--sl-layout-size) * 5);
   box-sizing: border-box;
   /* border: .3 solid rgba(255, 132, 0); */
@@ -250,16 +272,31 @@
   background-color: var(--sl-gray-bg-color);
 }
 
+.selector-header>.selector-header-search>.search-content{
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  /* padding: 0 calc(var(--sl-layout-size) * 2); */
+  width: 100%;
+  margin-right: calc(var(--sl-layout-size) * 0.5);
+  height: calc(var(--sl-layout-size) * 4);
+  padding: 0 calc(var(--sl-layout-size) * 0.5);
+  /* border: calc(var(--sl-layout-size) * 0.33) solid transparent; */
+  border-radius: calc(var(--sl-layout-size) * 0.8);
+}
+
 /*文本输入框*/
 .Selector>.selector-header>.selector-header-search .input {
   flex: 1;
   line-height: calc(var(--sl-layout-size) * 4);
-  width: calc(var(--sl-layout-size) * 25);
+  width: 100%;
   height: calc(var(--sl-layout-size) * 4);
   align-self: center;
   border: none;
-  padding-left: calc(var(--sl-layout-size) * 1);
-  border-radius: calc(var(--sl-layout-size) * 0.8);
+  padding: 0;
+  /* border-radius: calc(var(--sl-layout-size) * 0.8); */
   outline: none;
   font-size: calc(var(--sl-layout-size) * 2.1);
   background-color: transparent;
@@ -302,17 +339,27 @@
   transform: translateY(-50%); 
 }
 
+.Selector>.selector-header>.selector-header-search .search-clean{
+  display: none;
+  width: calc(var(--sl-layout-size) * 2);
+  height: calc(var(--sl-layout-size) * 2);
+  background: url(../image/icon-clean.svg) no-repeat center center/100%;
+}
+
+.Selector>.selector-header>.selector-header-search .search-clean:hover{
+  filter: contrast(50%);
+}
+
 /*文本输入框搜索按钮*/
 .Selector>.selector-header>.selector-header-search button {
   /* border-radius: 50%; */
-  align-self: center;
   width: calc(var(--sl-layout-size) * 4);
   height: calc(var(--sl-layout-size) * 4);
   border-radius: calc(var(--sl-layout-size) * 0.8);
-  background: url(./image/icon-search.svg) no-repeat center center/70%;
+  background: url(../image/icon-search.svg) no-repeat center center/70%;
 }
 
-.Selector>.selector-header>.selector-header-search .input:focus,
+.Selector>.selector-header>.selector-header-search .search-content:focus-within,
 .Selector>.selector-header>.selector-header-search button:hover {
   background-color: #e3e5e7;
 }
@@ -327,14 +374,14 @@
   height: calc(var(--sl-layout-size) * 4);
   line-height: calc(var(--sl-layout-size) * 4);
   font-size: calc(var(--sl-layout-size) * 2);
-  background: url(./image/loginfo.png) no-repeat right top/cover;
+  background: url(../image/loginfo.png) no-repeat right top/cover;
 }
 
 /* 头部-关闭按钮 */
 .Selector>.selector-header>.selector-header-close {
   width: calc(var(--sl-layout-size) * 8);
   height: calc(var(--sl-layout-size) * 8);
-  background: url(./image/pub_back_button.png) no-repeat right top/cover;
+  background: url(../image/pub_back_button.png) no-repeat right top/cover;
 }
 
 /* 武将包列表区域 */
@@ -351,7 +398,7 @@
   width: calc(var(--sl-layout-size) * 8);
   height: calc(var(--sl-layout-size) * 8);
   margin: calc(var(--sl-layout-size) * 1);
-  background: url(./image/icon-right.png) no-repeat 0 0/cover;
+  background: url(../image/icon-right.png) no-repeat 0 0/cover;
   transform: rotate(180deg);
 }
 
@@ -360,7 +407,7 @@
 }
 
 .Selector>.selector-list>.selector-list-right {
-  background: url(./image/icon-right.png) no-repeat 0 0/cover;
+  background: url(../image/icon-right.png) no-repeat 0 0/cover;
   transform: none;
 }
 
@@ -390,12 +437,12 @@
   box-sizing: border-box;
   border-radius: calc(var(--sl-layout-size) * 1.1);
   margin-right: calc(var(--sl-layout-size) * 2);
-  background: url(./image/pack.png) no-repeat center center/contain;
+  background: url(../image/pack.png) no-repeat center center/contain;
   transition: all .1s linear;
 }
 
 .Selector>.selector-list ul li.active {
-  background: url(./image/packAtive.png) no-repeat center center/contain;
+  background: url(../image/packAtive.png) no-repeat center center/contain;
   transform: scale(1.05);
 }
 
@@ -428,7 +475,7 @@
   /* width: 100%; */
   height: calc(var(--sl-layout-size) * 9.5);
   line-height: calc(var(--sl-layout-size) * 9.5);
-  background: url(./image/modebtn.png) no-repeat center center/contain;
+  background: url(../image/modebtn.png) no-repeat center center/contain;
   border-radius: calc(var(--sl-layout-size) * 1.2);
   transform: scale(0.8);
   transition: all .1s linear;
@@ -437,7 +484,7 @@
 .Selector>.selector-content>.selector-content-characterSort ol li.active {
   /* width: 100%; */
   transform: scale(0.86);
-  background: url(./image/modebtn2.png) no-repeat center center/contain;
+  background: url(../image/modebtn2.png) no-repeat center center/contain;
 }
 
 /* 内容-结果区域 */
@@ -485,17 +532,22 @@
 
 .Selector>.selector-content .result>.charSelectedBtn.active{
   box-shadow: 
-    0 2px 8px rgba(231, 51, 51, 0.3), 
-    0 0 0 2px rgba(231, 51, 51, 0.2), 
-    inset 0 1px 4px rgba(255, 255, 255, 0.15), 
-    rgba(0, 0, 0, 0.2) 0 0 0 1px, 
-    rgba(231, 51, 51, 0.4) 0 0 5px,
-    rgba(231, 51, 51, 0.4) 0 0 12px, 
-    rgba(231, 51, 51, 0.8) 0 0 15px;
+    0 calc(var(--sl-layout-size) * 0.33) calc(var(--sl-layout-size) * 1.33) rgba(0, 0, 0, 0.3),
+    0 0 0 calc(var(--sl-layout-size) * 0.33) rgba(0, 0, 0, 0.2),
+    inset 0 calc(var(--sl-layout-size) * 0.16) calc(var(--sl-layout-size) * 0.67) rgba(255, 255, 255, 0.15),
+  
+    0 calc(var(--sl-layout-size) * 0.33) calc(var(--sl-layout-size) * 1.33) rgba(231, 51, 51, 0.3), 
+    0 0 0 calc(var(--sl-layout-size) * 0.33) rgba(231, 51, 51, 0.2), 
+    inset 0 calc(var(--sl-layout-size) * 0.16) calc(var(--sl-layout-size) * 0.67) rgba(255, 255, 255, 0.15), 
+    rgba(0, 0, 0, 0.2) 0 0 0 calc(var(--sl-layout-size) * 0.16), 
+    rgba(231, 51, 51, 0.4) 0 0 calc(var(--sl-layout-size) * 0.83),
+    rgba(231, 51, 51, 0.4) 0 0 calc(var(--sl-layout-size) * 2), 
+    rgba(231, 51, 51, 0.8) 0 0 calc(var(--sl-layout-size) * 2.5);
 }
 
 /* 内容-右侧武将区域*/
 .Selector>.selector-content>.characterList {
+  position: relative;
   height: calc(100% - calc(var(--sl-layout-size) * 1));
   flex: 1;
 }
@@ -553,7 +605,7 @@
 /* 内容-右侧武将区域-武将链锁提示 */
 .Selector>.selector-content .characterList .item .tip {
   position: absolute;
-  background: url(./image/locked.png) no-repeat center center/contain;
+  background: url(../image/locked.png) no-repeat center center/contain;
   width: 100%;
   height: 100%;
   left: 0;
@@ -563,7 +615,7 @@
 }
 
 .Selector>.selector-content>.characterList .item .isselected {
-  box-shadow: rgba(0, 0, 0, 0.8) 0 0 12px !important;
+  box-shadow: rgba(0, 0, 0, 0.8) 0 0 calc(var(--sl-layout-size) * 2) !important;
   position: absolute;
   background-color: rgba(30, 30, 30, 0.6);
   width: 100%;
@@ -577,109 +629,10 @@
   z-index: 10;
 }
 
-/*帮助/设置弹窗容器*/
-.Selector #popupContainer {
-  position: absolute;
-  display: none;
-  width: 100%;
-  height: 100%;
-  backdrop-filter: blur(2px);
-  top: 0;
-  left: 0;
-  z-index: 20;
-}
-
-/*清除弹窗文本默认样式*/
-.Selector #popupContainer div * {
-	margin: 0;
-	padding: 0;
-	font-weight: 400;
-	line-height: 1.5;
-}
-
-/* 弹窗 */
-.Selector #popupContainer>.popup {
-  position: absolute;
-  width: 50%;
-  height: 80%;
-  background: rgba(0, 0, 0, .65);
-  box-sizing: border-box;
-  border: calc(var(--sl-layout-size) * 0.3) solid var(--sl-gray-border-color);
-  border-radius: calc(var(--sl-layout-size) * 1.5);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-/*弹窗头部区域*/
-.Selector #popupContainer>.popup>.header{
-	display: flex;
-	width: 100%;
-	height: calc(var(--sl-layout-size) * 5);
-}
-
-/*弹窗标题*/
-.Selector #popupContainer>.popup>.header>h2 {
-	flex: 1;
-  }
-
-/*弹窗关闭按钮*/
-.Selector #popupContainer>.popup>.header>span {
-  width: calc(var(--sl-layout-size) * 5);
-  height: calc(var(--sl-layout-size) * 5);
-  background: url(./image/close.png) no-repeat center center/contain;
-}
-
-/*弹窗内容区域*/
-.Selector #popupContainer>.popup>.content {
-	width: 100%;
-	height:  calc(100% - var(--sl-layout-size) * 5);
-	padding: var(--sl-layout-size);
-	box-sizing: border-box;
-	font-size: calc(var(--sl-layout-size) * 2.5);
-	text-align: start;
-	overflow-y: scroll;
-	overflow-x: hidden;
-  }
-
-/*设置弹窗的文本区域设置布局*/
-.Selector #popupContainer>.popup>.content>div {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: all.1s linear;
-}
-
-/*设置弹窗的按钮样式*/
-.Selector #popupContainer>.popup>.content>div>span {
-  display: block;
-  background: url(./image/button-off.png) no-repeat center center/contain;
-  width: calc(var(--sl-layout-size) * 10);
-  height: calc(var(--sl-layout-size) * 3.6);
-  transform: scale(0.8);
-  transform-origin: right center;
-}
-
-.Selector #popupContainer>.popup>.content>div.hidden {
-  opacity: 0 !important;
-  pointer-events: none;
-  margin-top: calc(var(--sl-layout-size) * -4.5);
-}
-
-.Selector #popupContainer>.popup>.content>div>span.active {
-  background: url(./image/button-on.png) no-repeat center center/contain;
-}
-
-.Selector #popupContainer h4 {
-  text-indent: 2em;
-}
-
 /*滚动隐藏*/
 .Selector>.selector-list ul::-webkit-scrollbar,
 .Selector>.selector-content-characterSort ol::-webkit-scrollbar,
-.Selector>.selector-content .characterList::-webkit-scrollbar,
-.Selector #popupContainer>div::-webkit-scrollbar {
+.Selector>.selector-content .characterList::-webkit-scrollbar{
   display: none;
 }
 
@@ -696,5 +649,5 @@
 .Selector li,
 .Selector .item,
 .Selector span {
-  cursor: url(./image/1.ico), auto;
+  cursor: url(../image/1.ico), auto;
 }
