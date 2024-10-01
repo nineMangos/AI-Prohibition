@@ -1,9 +1,18 @@
+import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 import Popup from "./index.js";
 import utils from "../../asset/utils.js";
 import config from "../../asset/config.js";
+import Constant from "../../asset/Constant.js";
 
 export default class Setup extends Popup {
 	constructor(parentNode) {
+		const minValue = 50, maxValue = 150;
+		const zoom = +getComputedStyle(document.documentElement).getPropertyValue('--sl-layout-zoom');
+		const relativeValue = (zoom - Constant.minZoom) / Constant.zoomRange;
+		const value = Math.round(relativeValue * (maxValue - minValue) + minValue);
+		const thumbWidth = 18;
+		const inputWidth = 150;
+
 		super(parentNode, `
 			/* 设置弹窗的文本区域设置布局 */
 			.content{
@@ -20,7 +29,7 @@ export default class Setup extends Popup {
 			}
 
 			/*设置弹窗的按钮开启样式*/
-			.content>div>span {
+			.content>div>h3 +span {
 				display: block;
 				background: url(${lib.assetURL}extension/AI禁将/image/button-off.png) no-repeat center center/contain;
 				width: 60px;
@@ -39,9 +48,71 @@ export default class Setup extends Popup {
 			.content>div>span.active {
 				background: url(${lib.assetURL}extension/AI禁将/image/button-on.png) no-repeat center center/contain;
 			}
+			/*设置弹窗的按钮开启样式*/
+			.content>div>.slider {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				width: 200px;
+			}
+			.slider>input[type="range"] {
+				--sl-custom-height: 8px;
+				--sl-custom-width: ${relativeValue * (inputWidth - thumbWidth)}px;
+				position: relative;
+				appearance: none;
+				-webkit-appearance: none;
+				width: ${inputWidth}px;
+				height: var(--sl-custom-height);
+				background-color: #EFEFEF;
+				outline: none;
+				border-radius: calc(var(--sl-custom-height) / 2);
+			}
+			.slider>input[type="range"]::before {
+				content: "";
+				position: absolute;
+				width: calc(var(--sl-custom-width) + ${thumbWidth / 2}px);
+				z-index: 0;
+				background-color: #767676;
+				height: var(--sl-custom-height);
+				border-radius: calc(var(--sl-custom-height)/2) 0 0 calc(var(--sl-custom-height) / 2);
+			}
+			.slider>input[type="range"]::-webkit-slider-thumb {
+				appearance: none;
+				-webkit-appearance: none;
+				position: relative;
+				z-index: 1;
+				width: ${thumbWidth}px;
+				height: ${thumbWidth}px;
+				border-radius: 9px;
+				background-color: #767676;
+			}
+			.slider>input[type="range"]:hover {
+				background-color: #E5E5E5;
+			}
+			.slider>input[type="range"]:hover::before,
+			.slider>input[type="range"]::-webkit-slider-thumb:hover {
+				background-color: #616161;
+			}
+			.slider>input[type="range"]:active {
+				background-color: #F5F5F5;
+			}
+			.slider>input[type="range"]:active::-webkit-slider-thumb,
+			.slider>input[type="range"]:active::before {
+				background-color: #838383;
+			}
+			.slider>input[type="number"] {
+				width: 40px;
+			}
 		`);
+		this.status = {
+			minValue,
+			maxValue,
+			thumbWidth,
+			inputWidth
+		}
+
 		this.setCaption('AI禁将——设置');
-		this.setContent(`                
+		this.setContent(`     
 			<div data-id="small"><h3>小型布局</h3><span></span></div>
 			<div data-id="defaultImage"><h3>不加载武将原画（性能更好）</h3><span></span></div>
 			<div data-id="remember"><h3>进入功能页时加载上次退出的页面</h3><span></span></div>
@@ -52,25 +123,33 @@ export default class Setup extends Popup {
 			<div data-id="exportData"><h3>导出禁将设置</h3></div>
 			<div data-id="clear"><h3>一键清除禁将记录并恢复默认设置</h3></div>
 			<div data-id="shoushaChars"><h3>仅启用手杀将池</h3></div>
+			<div data-id="setZoom">
+				<h3>界面缩放</h3>
+				<div class="slider">
+					<input type="range" name="slider-input1" min="${minValue}" max="${maxValue}" value="${value}">
+					<input type="number" name="slider-input2" min="${minValue}" max="${maxValue}" value="${value}">
+				</div>
+			</div>
 		`);
 		this.selector = parentNode;
 		const content = this.node.content;
 		this.node.content.node = {
-			small: content.querySelector('div[data-id="small"'),
-			defaultImage: content.querySelector('div[data-id="defaultImage"'),
-			remember: content.querySelector('div[data-id="remember"'),
-			addMenu: content.querySelector('div[data-id="addMenu"'),
-			hide: content.querySelector('div[data-id="hide"'),
-			importData: content.querySelector('div[data-id="importData"'),
-			importDataSelect: content.querySelector('div[data-id="importDataSelect"'),
-			exportData: content.querySelector('div[data-id="exportData"'),
-			clear: content.querySelector('div[data-id="clear"'),
-			shoushaChars: content.querySelector('div[data-id="shoushaChars"'),
+			small: content.querySelector('div[data-id="small"]'),
+			defaultImage: content.querySelector('div[data-id="defaultImage"]'),
+			remember: content.querySelector('div[data-id="remember"]'),
+			addMenu: content.querySelector('div[data-id="addMenu"]'),
+			hide: content.querySelector('div[data-id="hide"]'),
+			importData: content.querySelector('div[data-id="importData"]'),
+			importDataSelect: content.querySelector('div[data-id="importDataSelect"]'),
+			exportData: content.querySelector('div[data-id="exportData"]'),
+			clear: content.querySelector('div[data-id="clear"]'),
+			shoushaChars: content.querySelector('div[data-id="shoushaChars"]'),
+			setZoom: content.querySelector('div[data-id="setZoom"]')
 		};
 		this.#addListener();
 	}
 	#addListener() {
-		const { small, defaultImage, remember, addMenu, hide, importData, importDataSelect, exportData, clear, shoushaChars } = this.node.content.node;
+		const { small, defaultImage, remember, addMenu, hide, importData, importDataSelect, exportData, clear, shoushaChars, setZoom } = this.node.content.node;
 		this.autoToggleConfigBtn(small, () => this.selector.renderCharacterList());
 		this.autoToggleConfigBtn(defaultImage);
 		this.autoToggleConfigBtn(remember);
@@ -83,6 +162,8 @@ export default class Setup extends Popup {
 		exportData.addEventListener(click, this.handleClickExportDataConfig.bind(this));
 		clear.addEventListener(click, this.handleClickClearConfig.bind(this));
 		shoushaChars.addEventListener(click, this.handleClickShoushaCharsConfig.bind(this));
+		setZoom.querySelector('.slider>input[type="range"]').addEventListener('input', this.handleInputSetZoomConfig.bind(this));
+		setZoom.querySelector('.slider>input[type="number"]').addEventListener('input', this.handleInputSetZoomConfig.bind(this));
 	}
 	autoToggleConfigBtn(node, callback) {
 		const btn = node.querySelector('span');
@@ -159,6 +240,20 @@ export default class Setup extends Popup {
 		config.bannedList = Object.keys(lib.characterPack).flatMap(i => Object.keys(lib.characterPack[i])).filter(i => !shoushaChars.includes(i));
 		config.save();
 		this.selector.renderCharacterList();
+	}
+	handleInputSetZoomConfig(e) {
+		const rangeInput = this.node.content.node.setZoom.querySelector('.slider>input[type="range"]');
+		const numberInput = this.node.content.node.setZoom.querySelector('.slider>input[type="number"]');
+		const { minValue, maxValue, thumbWidth, inputWidth } = this.status;
+		const value = Math.max(minValue, Math.min(maxValue, +e.target.value));
+
+		(e.target === rangeInput ? numberInput : rangeInput).value = value;
+		const relativeValue = (value - minValue) / (maxValue - minValue);
+		rangeInput.style.setProperty('--sl-custom-width', `${relativeValue * (inputWidth - thumbWidth)}px`);
+		const zoom = (relativeValue * Constant.zoomRange + Constant.minZoom);
+		document.documentElement.style.setProperty('--sl-layout-zoom', zoom);
+		config.computedZoom = zoom * game.documentZoom;
+		config.save();
 	}
 }
 

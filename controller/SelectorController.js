@@ -7,6 +7,7 @@ import Popup from "../view/Popup/index.js";
 import Help from "../view/Popup/Help.js";
 import Plan from "../view/Popup/Plan.js";
 import Setup from "../view/Popup/Setup.js";
+import Constant from "../asset/Constant.js";
 
 export default class SelectorController {
 	/** * @type { number } 定时任务的id */
@@ -113,12 +114,12 @@ export default class SelectorController {
 					this.awaitKeyup = true;
 					const handleMousewheel = (e) => {
 						if (!e.ctrlKey) return;
-						var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+						const delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
 						let zoom = +getComputedStyle(document.documentElement).getPropertyValue('--sl-layout-zoom');
-						const max = 1.95 / game.documentZoom, min = 0.53 / game.documentZoom;
-						zoom = delta > 0 ? Math.min(max, zoom + 0.1) : Math.max(min, zoom - 0.1);
+						const max = Constant.maxZoom / game.documentZoom, min = Constant.minZoom / game.documentZoom;
+						zoom = delta > 0 ? Math.min(max, zoom + 0.08) : Math.max(min, zoom - 0.08);
 						document.documentElement.style.setProperty('--sl-layout-zoom', zoom);
-						config.zoom = zoom;
+						config.computedZoom = zoom * game.documentZoom;
 						config.save();
 					};
 					const handleKeyup = (e) => {
@@ -307,10 +308,10 @@ export default class SelectorController {
 		this.reducedBannedList.splice(0, this.reducedBannedList.length);
 		config.save();
 		const num2 = config.bannedList.length;
-		const mobile = window.cordova || lib.config.touchscreen;
-		const enter = mobile ? '\n\n' : '<br><br>';
+		const cordova = utils.getDeviceType() === "cordova";
+		const enter = cordova ? '\n\n' : '<br><br>';
 		const str = `本次禁用武将 ${num2 - num1} 个${enter}自选禁用武将 ${num2} 个${enter}总计禁用武将 ${num2 + filterList.length} 个`;
-		mobile ? utils.alert(str) : utils.asyncAlert(str);
+		cordova ? utils.alert(str) : utils.asyncAlert(str);
 		this.selector.buttonsArr.forEach(btn => btn.autoblock());
 	}
 	onMousedownCharacterList(target, event) {

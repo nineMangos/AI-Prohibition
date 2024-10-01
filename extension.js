@@ -4,6 +4,7 @@ import SelectorController from "./controller/SelectorController.js";
 import SelectorModel from "./model/SelectorModel.js";
 import config from "./asset/config.js";
 import utils from "./asset/utils.js";
+import Constant from "./asset/Constant.js";
 
 game.import("extension", function () {
 
@@ -14,7 +15,6 @@ game.import("extension", function () {
 	return {
 		name: "AI禁将",
 		content: function (cfg, pack) {
-
 			/* <-------------------------AI禁将-------------------------> */
 			selectorController = new SelectorController(new Selector(), new SelectorModel());
 
@@ -61,7 +61,7 @@ game.import("extension", function () {
 				.then(info => updateHistory = info, err => utils.alert('JSON 文件解析失败\n' + err))
 		}, config: {
 			"updateInfo": {
-				name: `版本：2.0`,
+				name: `版本：${Constant.version}`,
 				init: '1',
 				unfrequent: true,
 				intro: "查看此版本更新说明",
@@ -74,9 +74,8 @@ game.import("extension", function () {
 					node.parentNode.style.width = "350px";
 					node.style.cssText = "width: 350px; padding:5px; box-sizing: border-box;";
 					let str = '';
-					const version = "2.0";
 					if (updateHistory) {
-						const changeLog = updateHistory[version];
+						const changeLog = updateHistory[Constant.version];
 						for (let i of changeLog) {
 							str += `·${i}<br>`;
 						}
@@ -138,6 +137,32 @@ game.import("extension", function () {
 					selectorController.openSelector();
 				},
 			},
+
+			"repository1": {
+				clear: true,
+				name: `点击复制github仓库地址`,
+				async onclick() {
+					if (navigator.clipboard && navigator.clipboard.writeText) {
+						await navigator.clipboard.writeText("https://github.com/nineMangos/AI-Prohibition");
+						alert('内容已成功复制到剪贴板');
+					} else {
+						alert('复制失败');
+					}
+				}
+			},
+
+			"repository2": {
+				clear: true,
+				name: `点击复制gitee仓库地址`,
+				async onclick() {
+					if (navigator.clipboard && navigator.clipboard.writeText) {
+						await navigator.clipboard.writeText("https://gitee.com/ninemangos/AI-Prohibition");
+						alert('内容已成功复制到剪贴板');
+					} else {
+						alert('复制失败');
+					}
+				}
+			},
 		}, help: {}, package: {
 			character: {
 				character: {
@@ -162,7 +187,7 @@ game.import("extension", function () {
 			author: "芒果🥭",
 			diskURL: "",
 			forumURL: "",
-			version: "2.0",
+			version: Constant.version,
 		}, files: { "character": [], "card": [], "skill": [], "audio": [] }
 	}
 });

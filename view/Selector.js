@@ -110,7 +110,7 @@ class Selector extends HTMLDivElement {
 		const cvs = new CanvasBoard(this.node.characterList, this);
 		this.canvas = cvs;
 
-		document.documentElement.style.setProperty('--sl-layout-zoom', config.zoom);
+		document.documentElement.style.setProperty('--sl-layout-zoom', config.computedZoom / game.documentZoom);
 		this.node.selectContent.parentNode.querySelector('.method>span').textContent = config.currentActiveMode;
 		if (config.isCharSelectedActive) {
 			this.node.charSelectedBtn.classList.add('active');

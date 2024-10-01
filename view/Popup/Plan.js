@@ -18,7 +18,7 @@ class PlanCard {
 	get data() {
 		const name = this.name;
 		const { bannedList, id } = this._data;
-		return { name, id, bannedList, fileName: this.getFileName(name) };
+		return { name, id, bannedList, fileName: this.getFileName(name, bannedList.length) };
 	}
 	constructor({ name, bannedList, id }) {
 		const li = document.createElement('li');
@@ -27,7 +27,7 @@ class PlanCard {
 		Object.setPrototypeOf(li, this);
 		const show = document.createElement('div');
 		show.classList.add('show');
-		show.innerHTML = `<span data-id="name">${name}</span><input type="text" maxlength="5"><span data-id="length">（禁将数量：${bannedList.length}）</span>`;
+		show.innerHTML = `<span data-id="name">${name}</span><input type="text" maxlength="6"><span data-id="length">（禁将数量：${bannedList.length}）</span>`;
 		const action = document.createElement('div');
 		action.classList.add('action');
 		action.innerHTML = `
@@ -42,11 +42,12 @@ class PlanCard {
 	}
 	/**
 	 * 获取文件名
-	 * @param { string } name 
-	 * @returns { string }
+	 * @param { string | number} str1 
+	 * @param { string | number} str2
+	 * @returns { string } 
 	 */
-	getFileName(name) {
-		return `${name} - ${this._data.id}.json`;
+	getFileName(str1, str2) {
+		return `${str1}【${str2}】.json`;
 	}
 }
 
@@ -110,18 +111,22 @@ export default class Plan extends Popup {
 		`);
 		this.selector = parentNode;
 		this.setCaption('AI禁将——方案');
-		this.readAllJSON()
-			.then(plans => {
-				const add = document.createElement('div');
-				const ul = document.createElement('ul');
-				plans.forEach(item => ul.appendChild(new PlanCard(item)));
-				add.classList.add('add');
-				add.innerHTML = `<img src="${lib.assetURL}extension/AI禁将/image/add.png" style="cursor: pointer;"><span data-id="text"> 添加新的方案</span>`;
-				this.node.content.node = { add, ul };
-				this.setContent(add);
-				this.setContent(ul);
-				this.#addListener();
-			});
+		if (!['electron', 'cordova'].includes(utils.getDeviceType())) {
+			this.setContent('<center style="line-height: 50vh; font-size: 30px;">当前环境不可用</center>');
+		} else {
+			this.readAllJSON()
+				.then(plans => {
+					const add = document.createElement('div');
+					const ul = document.createElement('ul');
+					plans.forEach(item => ul.appendChild(new PlanCard(item)));
+					add.classList.add('add');
+					add.innerHTML = `<img src="${lib.assetURL}extension/AI禁将/image/add.png" style="cursor: pointer;"><span data-id="text"> 添加新的方案</span>`;
+					this.node.content.node = { add, ul };
+					this.setContent(add);
+					this.setContent(ul);
+					this.#addListener();
+				});
+		}
 	}
 	/** @returns { PlanCard } */
 	createNewPlanCard() {
@@ -207,10 +212,19 @@ export default class Plan extends Popup {
 			}
 		});
 		this.node.content.addEventListener('dblclick', (e) => {
-			const name = e.target;
-			if (name.matches('ul>li>.show>span[data-id="name"]')) {
+			if (e.target.matches('ul>li>.show>span[data-id="name"]')) {
+				const name = e.target;
 				const input = name.nextElementSibling;
 				this.validateInput(name, input);
+			} else if (e.target.matches('ul>li')) {
+				const li = e.target;
+				if (navigator.clipboard && navigator.clipboard.writeText) {
+					if (utils.confirm(`是否将“${li.name}”的所有禁将id复制到剪贴板中？`)) {
+						const str = JSON.stringify(li.data.bannedList);
+						navigator.clipboard.writeText(str.substring(1, str.length - 1));
+						utils.alert("复制成功！")
+					}
+				}
 			}
 		});
 	}
@@ -234,8 +248,16 @@ export default class Plan extends Popup {
 			name.classList.remove('hidden');
 			value = value.trim();
 			if (!value) return;
+			if (Array.from(li.parentNode.childNodes).some(item => item !== li && item.name === value)) {
+				utils.alert("命名有重复！");
+				return;
+			}
+			if (!/^[a-zA-Z0-9\s\u4e00-\u9fa5\-\_\.]+(\.[a-zA-Z0-9]+)*$/.test(value)) {
+				utils.alert("命名不合法！");
+				return;
+			}
 			const oldFileName = li.data.fileName;
-			const newFileName = li.getFileName(value);
+			const newFileName = li.getFileName(value, li.data.bannedList.length);
 			this.renameJSON(oldFileName, newFileName)
 				.then(() => {
 					li.name = value;
@@ -249,7 +271,7 @@ export default class Plan extends Popup {
 	 */
 	readAllJSON() {
 		return new Promise((resolve, reject) => {
-			game.getFileList(`${lib.assetURL}extension/AI禁将/plan`, async (folders, files) => {
+			game.getFileList(`extension/AI禁将/plan`, async (folders, files) => {
 				let num = 0;
 				const plans = [];
 				for (const file of files) {
@@ -273,7 +295,7 @@ export default class Plan extends Popup {
 	 */
 	writeJSON(card) {
 		return new Promise((resolve) => {
-			game.writeFile(JSON.stringify(card.data), `${lib.assetURL}extension/AI禁将/plan`, card.data.fileName, data => {
+			game.writeFile(JSON.stringify(card.data), `extension/AI禁将/plan`, card.data.fileName, data => {
 				resolve(data);
 			});
 		})
@@ -285,7 +307,7 @@ export default class Plan extends Popup {
 	 */
 	deleteJSON(card) {
 		return new Promise(resolve => {
-			game.removeFile(`${lib.assetURL}extension/AI禁将/plan/${card.data.fileName}`, data => {
+			game.removeFile(`extension/AI禁将/plan/${card.data.fileName}`, data => {
 				resolve(data);
 			});
 		})
@@ -298,8 +320,8 @@ export default class Plan extends Popup {
 	 */
 	renameJSON(oldFile, newFile) {
 		return new Promise((resolve, reject) => {
-			const _path = `${lib.assetURL}extension/AI禁将/plan/`;
-			utils.renameFile(_path + oldFile, _path + newFile, data => resolve(data), e => reject(e));
+			const _path = `extension/AI禁将/plan/`;
+			utils.renameFile(_path + oldFile, newFile, data => resolve(data), e => reject(e));
 		})
 	}
 }

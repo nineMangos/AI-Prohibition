@@ -10,7 +10,7 @@ class Config {
 			remember: true,
 			small: false,
 			hide: false,
-			zoom: 1,
+			computedZoom: 1,
 		}
 	}
 
