@@ -321,8 +321,9 @@ class Selector extends HTMLDivElement {
 		}
 		const click = getEvtName('click');
 		const mousedown = getEvtName('mousedown');
+		const mouseup = getEvtName('mouseup');
 
-		handleEventListener(selector, 'mouseup', 'onMouseupSelector');
+		handleEventListener(selector, mouseup, 'onMouseupSelector');
 		handleEventListener(selectContent, click, 'onClickSelectContentBtn');
 		handleEventListener(help, click, 'onClickHelpBtn');
 		handleEventListener(selectAll, click, 'onClickSelectAllBtn');

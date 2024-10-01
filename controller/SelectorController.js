@@ -28,8 +28,8 @@ export default class SelectorController {
 	awaitKeyup;
 	/** * @type { "showSystem" | undefined } */
 	onClose
-	/** * @type { function | undefined } 缓存本体的 window.onkeydown 函数*/
-	windowOnkeydown
+	/** * @type { Array } 用于记录窗口事件并禁用，关闭时恢复 */
+	recordEvent = [];
 	/**
 	 * @param { Selector } selector 选择器
 	 * @param { SelectorModel } model 选择器模型
@@ -44,7 +44,8 @@ export default class SelectorController {
 	 * @param { "showSystem" | undefined } onClose 
 	 */
 	openSelector(onClose) {
-		this.windowOnkeydown = window.onkeydown;
+		this.addBannedEvent(window, 'onkeydown');
+		this.addBannedEvent(lib.config, 'swipe');
 		window.onkeydown = this.onKeydownWindow.bind(this);
 		this.onClose = onClose;
 		this.selector.open();
@@ -238,7 +239,7 @@ export default class SelectorController {
 		config.scrollLeft = this.selector.node.charPackList.scrollLeft;
 		config.save();
 		this.selector.close();
-		window.onkeydown = this.windowOnkeydown;
+		this.removeAllBannedEvent();
 		if (ui.dialog) ui.dialog.show();
 		if (this.onClose === "showSystem") {
 			setTimeout(() => {
@@ -351,6 +352,20 @@ export default class SelectorController {
 		} else if (!btn.isUnselectable) {
 			this.hanldleCharBtnSelect(btn);
 		}
+	}
+	/**
+	 * @param { object } target 目标对象
+	 * @param { string } key 目标对象的键
+	 */
+	addBannedEvent(target, key) {
+		this.recordEvent.push([target, key, target[key]]);
+		target[key] = typeof target[key] === 'function' ? () => { } : null;
+	}
+	removeAllBannedEvent() {
+		this.recordEvent.forEach((item) => {
+			item[0][item[1]] = item[2];
+		});
+		this.recordEvent = [];
 	}
 }
 

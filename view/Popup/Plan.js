@@ -7,7 +7,7 @@ class PlanCardModel {
 	constructor(name, bannedList) {
 		this.name = name;
 		this.bannedList = bannedList.slice();
-		this.id = Date.now();
+		this.id = Date.now().toString(32);
 	}
 }
 
@@ -18,7 +18,7 @@ class PlanCard {
 	get data() {
 		const name = this.name;
 		const { bannedList, id } = this._data;
-		return { name, id, bannedList, fileName: this.getFileName(name, bannedList.length) };
+		return { name, id, bannedList, fileName: this.getFileName(name) };
 	}
 	constructor({ name, bannedList, id }) {
 		const li = document.createElement('li');
@@ -42,18 +42,21 @@ class PlanCard {
 	}
 	/**
 	 * 获取文件名
-	 * @param { string | number} str1 
-	 * @param { string | number} str2
+	 * @param { string } str
 	 * @returns { string } 
 	 */
-	getFileName(str1, str2) {
-		return `${str1}【${str2}】.json`;
+	getFileName(str1) {
+		const { bannedList, id } = this._data;
+		return `${str1}【${bannedList.length}】 - ${id}.json`;
 	}
 }
 
 export default class Plan extends Popup {
 	selector
-	maxLi = 20;
+	/** @type { number } 最大方案数 */
+	maxLi = 15;
+	/** @type { Promise | null } 当前的 Promise 对象 */
+	currentPromise = null;
 	constructor(parentNode) {
 		super(parentNode, `
 			.content>.add{
@@ -152,13 +155,17 @@ export default class Plan extends Popup {
 			if (e.target.matches('.content>.add>img')) {
 				//添加按钮
 				utils.playAudio('click1');
-				let count = ul.childElementCount;
-				if (count++ >= this.maxLi) return;
 				const card = this.createNewPlanCard();
 				this.writeJSON(card).then(() => {
+					let count = ul.childElementCount;
+					if (count++ >= this.maxLi) return;
+					if (Array.from(ul.childNodes).some(item => item.name === card.name)) {
+						return;
+					}
 					ul.appendChild(card);
-					if (count >= this.maxLi) {
-						add.querySelector('span[data-id="text"]').innerHTML += '（已达上限）';
+					const textnode = add.querySelector('span[data-id="text"]');
+					if (count >= this.maxLi && !textnode.innerHTML.includes('（已达上限）')) {
+						textnode.innerHTML += '（已达上限）';
 					}
 				});
 			} else if (e.target.closest('.content>ul>li>.action')) {
@@ -257,7 +264,7 @@ export default class Plan extends Popup {
 				return;
 			}
 			const oldFileName = li.data.fileName;
-			const newFileName = li.getFileName(value, li.data.bannedList.length);
+			const newFileName = li.getFileName(value);
 			this.renameJSON(oldFileName, newFileName)
 				.then(() => {
 					li.name = value;
@@ -270,7 +277,10 @@ export default class Plan extends Popup {
 	 * @returns { Promise<object> }
 	 */
 	readAllJSON() {
-		return new Promise((resolve, reject) => {
+		if (this.currentPromise) {
+			return Promise.reject('上一步操作尚未完成！');
+		}
+		this.currentPromise = new Promise((resolve, reject) => {
 			game.getFileList(`extension/AI禁将/plan`, async (folders, files) => {
 				let num = 0;
 				const plans = [];
@@ -284,9 +294,11 @@ export default class Plan extends Popup {
 						plans.push(data);
 					}
 				}
+				this.currentPromise = null;
 				resolve(plans);
 			}, e => reject(e));
 		})
+		return this.currentPromise;
 	}
 	/**
 	 * 写入JSON文件
@@ -294,11 +306,16 @@ export default class Plan extends Popup {
 	 * @returns { Promise }
 	 */
 	writeJSON(card) {
-		return new Promise((resolve) => {
+		if (this.currentPromise) {
+			return Promise.reject('上一步操作尚未完成！');
+		}
+		this.currentPromise = new Promise((resolve) => {
 			game.writeFile(JSON.stringify(card.data), `extension/AI禁将/plan`, card.data.fileName, data => {
+				this.currentPromise = null;
 				resolve(data);
 			});
 		})
+		return this.currentPromise;
 	}
 	/**
 	 * 删除JSON文件
@@ -306,11 +323,16 @@ export default class Plan extends Popup {
 	 * @returns { Promise }
 	 */
 	deleteJSON(card) {
-		return new Promise(resolve => {
+		if (this.currentPromise) {
+			return Promise.reject('上一步操作尚未完成！');
+		}
+		this.currentPromise = new Promise(resolve => {
 			game.removeFile(`extension/AI禁将/plan/${card.data.fileName}`, data => {
+				this.currentPromise = null;
 				resolve(data);
 			});
 		})
+		return this.currentPromise;
 	}
 	/**
 	 * 重命名JSON文件
@@ -319,10 +341,17 @@ export default class Plan extends Popup {
 	 * @returns { Promise }
 	 */
 	renameJSON(oldFile, newFile) {
-		return new Promise((resolve, reject) => {
+		if (this.currentPromise) {
+			return Promise.reject('上一步操作尚未完成！');
+		}
+		this.currentPromise = new Promise((resolve, reject) => {
 			const _path = `extension/AI禁将/plan/`;
-			utils.renameFile(_path + oldFile, newFile, data => resolve(data), e => reject(e));
+			utils.renameFile(_path + oldFile, newFile, data => {
+				this.currentPromise = null;
+				resolve(data);
+			}, e => reject(e));
 		})
+		return this.currentPromise;
 	}
 }
 
